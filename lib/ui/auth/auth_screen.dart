@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_features/ui/auth/login_with_phone_number.dart';
+import 'package:firebase_features/ui/chat_screen.dart';
 import 'package:firebase_features/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,6 +20,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
   String _enteredEmail = '';
   String _enteredPassword = '';
+  bool _isGoogleSignInLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +127,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 height: 30,
               ),
               InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
                 onTap: () {
                   Navigator.push(
                       context,
@@ -156,6 +160,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 height: 30,
               ),
               InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
                 onTap: () => _handleGoogleSignIn(),
                 child: Container(
                   margin: const EdgeInsets.only(
@@ -164,17 +170,24 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   height: 50,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(color: Colors.white)),
+                    borderRadius: BorderRadius.circular(50),
+                    border: Border.all(color: Colors.white),
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        'assets/images/google_logo.png', // Replace with the path to your Google logo asset
-                        height: 24.0,
-                        width: 24.0,
-                      ),
-                      const SizedBox(width: 10),
+                      _isGoogleSignInLoading
+                          ? const CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            )
+                          : Image.asset(
+                              'assets/images/google_logo.png',
+                              height: 24.0,
+                              width: 24.0,
+                            ),
+                      const SizedBox(width: 30),
                       const Text(
                         'Sign In with Google',
                         style: TextStyle(fontSize: 18),
@@ -191,19 +204,47 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _handleGoogleSignIn() async {
-    GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    try {
+      setState(() {
+        _isGoogleSignInLoading = true;
+      });
 
-    GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
+      if (googleUser == null) {
+        // The user canceled Google Sign-In
+        setState(() {
+          _isGoogleSignInLoading = false;
+        });
+        return;
+      }
 
-    UserCredential userCredential =
-        await _firebase.signInWithCredential(credential);
+      GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
 
-    debugPrint(userCredential.toString());
+      AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential =
+          await _firebase.signInWithCredential(credential);
+
+      debugPrint(userCredential.toString());
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(),
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      setState(() {
+        _isGoogleSignInLoading = false;
+      });
+    }
   }
 
   void _submit() async {
