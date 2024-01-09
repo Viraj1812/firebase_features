@@ -3,7 +3,6 @@ import 'package:firebase_features/ui/auth/verify_code.dart';
 import 'package:firebase_features/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 
 class LoginWithPhoneNumber extends StatefulWidget {
   const LoginWithPhoneNumber({super.key});
@@ -13,11 +12,7 @@ class LoginWithPhoneNumber extends StatefulWidget {
 }
 
 class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
-  String initialCountry = 'IN';
-  PhoneNumber number = PhoneNumber(isoCode: 'IN');
-  final phoneNumberController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
+  TextEditingController phoneController = TextEditingController();
   bool loading = false;
   final auth = FirebaseAuth.instance;
 
@@ -44,71 +39,48 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          InternationalPhoneNumberInput(
-                              onInputChanged: (PhoneNumber number) {
-                                debugPrint(number.phoneNumber);
-                              },
-                              onInputValidated: (bool value) {
-                                debugPrint(value.toString());
-                              },
-                              selectorConfig: const SelectorConfig(
-                                selectorType: PhoneInputSelectorType.DROPDOWN,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          decoration: const InputDecoration(
+                              labelText: 'Phone Number',
+                              hintText: '+911234567890',
+                              prefixIcon: Icon(Icons.phone)),
+                          keyboardType: TextInputType.phone,
+                          controller: phoneController,
+                          validator: (value) {
+                            final phoneRegex = RegExp(r'^\+91[6-9]\d{9}$');
+                            if (value == null) {
+                              return 'Please enter phone number';
+                            }
+                            return phoneRegex.hasMatch(value)
+                                ? null
+                                : 'Please enter a valid Indian phone number.';
+                          },
+                        ),
+                        const SizedBox(
+                          height: 30,
+                        ),
+                        loading
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : ElevatedButton(
+                                onPressed: () {
+                                  _submit();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black87),
+                                child: Text(
+                                  'Continue',
+                                  style: GoogleFonts.montserrat(
+                                      fontSize: 18,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500),
+                                ),
                               ),
-                              ignoreBlank: false,
-                              autoValidateMode: AutovalidateMode.disabled,
-                              selectorTextStyle:
-                                  const TextStyle(color: Colors.white),
-                              initialValue: number,
-                              textFieldController: phoneNumberController,
-                              inputDecoration: const InputDecoration(
-                                labelText: 'Phone Number',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (mobileNumber) =>
-                                  validatePhoneNumber(mobileNumber ?? '')),
-                          const SizedBox(
-                            height: 30,
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              auth.verifyPhoneNumber(
-                                phoneNumber: phoneNumberController.text,
-                                verificationCompleted: (_) {},
-                                verificationFailed: (e) {
-                                  Utils.showToast(context, e.toString());
-                                },
-                                codeSent: (String verificationId, int? token) {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const VerificationScreen(),
-                                      ));
-                                },
-                                codeAutoRetrievalTimeout: (e) {
-                                  Utils.showToast(context, e.toString());
-                                },
-                              );
-                              // _formKey.currentState?.validate();
-                              // Utils.showToast(context, number.toString());
-                            },
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black87),
-                            child: Text(
-                              'Continue',
-                              style: GoogleFonts.montserrat(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                        ],
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -120,15 +92,38 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
     );
   }
 
-  String? validatePhoneNumber(String value) {
-    if (value.isEmpty) {
-      return 'Phone number is required';
-    }
-
-    if (value.length < 10) {
-      return 'Enter a valid phone number';
-    }
-
-    return null;
+  void _submit() async {
+    setState(() {
+      loading = true;
+    });
+    auth.verifyPhoneNumber(
+      phoneNumber: phoneController.text,
+      verificationCompleted: (_) {},
+      verificationFailed: (e) {
+        Utils.showToast(context, e.toString());
+        setState(() {
+          loading = true;
+        });
+      },
+      codeSent: (verificationId, forceResendingToken) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                VerificationScreen(verificationId: verificationId),
+          ),
+          (route) => false,
+        );
+        setState(() {
+          loading = true;
+        });
+      },
+      codeAutoRetrievalTimeout: (e) {
+        Utils.showToast(context, e.toString());
+        setState(() {
+          loading = true;
+        });
+      },
+    );
   }
 }

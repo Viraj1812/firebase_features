@@ -1,17 +1,18 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_features/ui/chat_screen.dart';
+import 'package:firebase_features/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class VerificationScreen extends StatefulWidget {
-  const VerificationScreen({super.key});
-
+  const VerificationScreen({super.key, required this.verificationId});
+  final String verificationId;
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
-  final _formKey = GlobalKey<FormState>();
-
+  TextEditingController codeController = TextEditingController();
   bool loading = false;
   final auth = FirebaseAuth.instance;
 
@@ -38,28 +39,35 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(
-                            height: 30,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          decoration: const InputDecoration(
+                              labelText: 'Verification Code',
+                              hintText: ' 6 digit code ',
+                              prefixIcon: Icon(Icons.code)),
+                          keyboardType: TextInputType.number,
+                          controller: codeController,
+                        ),
+                        const SizedBox(
+                          height: 30,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            _submit();
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black87),
+                          child: Text(
+                            'Continue',
+                            style: GoogleFonts.montserrat(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500),
                           ),
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black87),
-                            child: Text(
-                              'Continue',
-                              style: GoogleFonts.montserrat(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -71,15 +79,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
     );
   }
 
-  String? validatePhoneNumber(String value) {
-    if (value.isEmpty) {
-      return 'Phone number is required';
-    }
+  Future<void> _submit() async {
+    final credential = PhoneAuthProvider.credential(
+      verificationId: widget.verificationId,
+      smsCode: codeController.text.toString(),
+    );
 
-    if (value.length < 10) {
-      return 'Enter a valid phone number';
+    try {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ChatScreen(),
+        ),
+        (route) => false,
+      );
+      await auth.signInWithCredential(credential);
+    } catch (e) {
+      Utils.showToast(context, e.toString());
     }
-
-    return null;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_features/ui/auth/auth_screen.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatelessWidget {
@@ -12,7 +13,10 @@ class ChatScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              FirebaseAuth.instance.signOut();
+              userSignOut().then((value) => Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthScreen()),
+                  (route) => false));
             },
             icon: const Icon(Icons.exit_to_app),
           )
@@ -22,5 +26,9 @@ class ChatScreen extends StatelessWidget {
         child: Text('Logged in!'),
       ),
     );
+  }
+
+  Future userSignOut() async {
+    await FirebaseAuth.instance.signOut();
   }
 }

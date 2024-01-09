@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_features/ui/auth/auth_screen.dart';
+import 'package:firebase_features/ui/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -54,7 +56,15 @@ void appNavigate(BuildContext context) {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const AuthScreen(),
+        builder: (context) => StreamBuilder(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return const ChatScreen();
+            }
+            return const AuthScreen();
+          },
+        ),
       ),
     );
   });
