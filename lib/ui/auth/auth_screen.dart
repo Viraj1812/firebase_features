@@ -3,6 +3,7 @@ import 'package:firebase_features/ui/auth/login_with_phone_number.dart';
 import 'package:firebase_features/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -150,12 +151,59 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                   ),
                 ),
-              )
+              ),
+              const SizedBox(
+                height: 30,
+              ),
+              InkWell(
+                onTap: () => _handleGoogleSignIn(),
+                child: Container(
+                  margin: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                  ),
+                  height: 50,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border.all(color: Colors.white)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/google_logo.png', // Replace with the path to your Google logo asset
+                        height: 24.0,
+                        width: 24.0,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Sign In with Google',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _handleGoogleSignIn() async {
+    GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+
+    AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    UserCredential userCredential =
+        await _firebase.signInWithCredential(credential);
+
+    debugPrint(userCredential.toString());
   }
 
   void _submit() async {
