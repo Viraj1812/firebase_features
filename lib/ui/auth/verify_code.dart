@@ -1,6 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_features/ui/chat_screen.dart';
-import 'package:firebase_features/utils/helper_methods.dart';
+import 'package:firebase_features/services/firebase_auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,7 +12,7 @@ class VerificationScreen extends StatefulWidget {
 class _VerificationScreenState extends State<VerificationScreen> {
   TextEditingController codeController = TextEditingController();
   bool loading = false;
-  final auth = FirebaseAuth.instance;
+  final AuthHelper _authHelper = AuthHelper();
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +53,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            _submit();
+                            _authHelper.verifyCode(
+                              widget.verificationId,
+                              codeController.text.toString(),
+                              context,
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black87),
@@ -77,25 +79,5 @@ class _VerificationScreenState extends State<VerificationScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _submit() async {
-    final credential = PhoneAuthProvider.credential(
-      verificationId: widget.verificationId,
-      smsCode: codeController.text.toString(),
-    );
-
-    try {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const ChatScreen(),
-        ),
-        (route) => false,
-      );
-      await auth.signInWithCredential(credential);
-    } catch (e) {
-      Utils.showToast(context, e.toString());
-    }
   }
 }

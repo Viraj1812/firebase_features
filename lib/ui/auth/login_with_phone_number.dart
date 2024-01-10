@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_features/services/firebase_auth_service.dart';
 import 'package:firebase_features/ui/auth/verify_code.dart';
-import 'package:firebase_features/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,7 +13,8 @@ class LoginWithPhoneNumber extends StatefulWidget {
 class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
   TextEditingController phoneController = TextEditingController();
   bool loading = false;
-  final auth = FirebaseAuth.instance;
+  // final auth = FirebaseAuth.instance;
+  final AuthHelper _authHelper = AuthHelper();
 
   @override
   Widget build(BuildContext context) {
@@ -96,15 +96,10 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
     setState(() {
       loading = true;
     });
-    auth.verifyPhoneNumber(
+
+    try {
+      await _authHelper.verifyPhoneNumber(
         phoneNumber: phoneController.text,
-        verificationCompleted: (_) {},
-        verificationFailed: (e) {
-          Utils.showToast(context, e.toString());
-          setState(() {
-            loading = true;
-          });
-        },
         codeSent: (verificationId, forceResendingToken) {
           Navigator.pushAndRemoveUntil(
             context,
@@ -115,14 +110,15 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
             (route) => false,
           );
           setState(() {
-            loading = true;
+            loading = false;
           });
         },
-        codeAutoRetrievalTimeout: (e) {
-          Utils.showToast(context, e.toString());
-          setState(() {
-            loading = true;
-          });
-        });
+        context: context,
+      );
+    } catch (e) {
+      setState(() {
+        loading = false;
+      });
+    }
   }
 }

@@ -1,12 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_features/services/firebase_auth_service.dart';
 import 'package:firebase_features/ui/auth/login_with_phone_number.dart';
 import 'package:firebase_features/ui/chat_screen.dart';
 import 'package:firebase_features/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
-final _firebase = FirebaseAuth.instance;
+// final _firebase = FirebaseAuth.instance;
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -21,6 +21,7 @@ class _AuthScreenState extends State<AuthScreen> {
   String _enteredEmail = '';
   String _enteredPassword = '';
   bool _isGoogleSignInLoading = false;
+  final AuthHelper _authHelper = AuthHelper();
 
   @override
   Widget build(BuildContext context) {
@@ -211,27 +212,14 @@ class _AuthScreenState extends State<AuthScreen> {
         _isGoogleSignInLoading = true;
       });
 
-      GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      User? user = await _authHelper.signInWithGoogle(context);
 
-      if (googleUser == null) {
-        // The user canceled Google Sign-In
+      if (user == null) {
         setState(() {
           _isGoogleSignInLoading = false;
         });
         return;
       }
-
-      GoogleSignInAuthentication? googleAuth = await googleUser.authentication;
-
-      AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      UserCredential userCredential =
-          await _firebase.signInWithCredential(credential);
-
-      debugPrint(userCredential.toString());
 
       Navigator.pushAndRemoveUntil(
         context,
@@ -259,17 +247,19 @@ class _AuthScreenState extends State<AuthScreen> {
 
     try {
       if (_isLogin) {
-        final userCredentials = await _firebase.signInWithEmailAndPassword(
-          email: _enteredEmail,
-          password: _enteredPassword,
+        User? user = await _authHelper.signInWithEmailAndPassword(
+          _enteredEmail,
+          _enteredPassword,
+          context,
         );
-        debugPrint(userCredentials.toString());
+        debugPrint(user.toString());
       } else {
-        final userCredentials = await _firebase.createUserWithEmailAndPassword(
-          email: _enteredEmail,
-          password: _enteredPassword,
+        User? user = await _authHelper.createUserWithEmailAndPassword(
+          _enteredEmail,
+          _enteredPassword,
+          context,
         );
-        debugPrint(userCredentials.toString());
+        debugPrint(user.toString());
       }
     } on FirebaseAuthException catch (error) {
       String errorMessage = 'Authentication Failed';

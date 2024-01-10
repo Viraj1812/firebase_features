@@ -1,10 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_features/services/firebase_auth_service.dart';
 import 'package:firebase_features/ui/auth/auth_screen.dart';
-import 'package:firebase_features/utils/helper_methods.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatelessWidget {
-  const ChatScreen({super.key});
+  ChatScreen({super.key});
+  final AuthHelper _authHelper = AuthHelper();
 
   @override
   Widget build(BuildContext context) {
@@ -14,16 +14,18 @@ class ChatScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              userDeleteAccount(context);
+              _authHelper.userDeleteAccount(context);
             },
             icon: const Icon(Icons.delete),
           ),
           IconButton(
             onPressed: () {
-              userSignOut().then((value) => Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AuthScreen()),
-                  (route) => false));
+              _authHelper.userSignOut().then((value) =>
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const AuthScreen()),
+                      (route) => false));
             },
             icon: const Icon(Icons.exit_to_app),
           ),
@@ -33,23 +35,5 @@ class ChatScreen extends StatelessWidget {
         child: Text('Logged in!'),
       ),
     );
-  }
-
-  Future<void> userDeleteAccount(BuildContext context) async {
-    try {
-      Utils.showToast(context, 'Account deleted successfully.');
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const AuthScreen()),
-        (route) => false,
-      );
-      await FirebaseAuth.instance.currentUser?.delete();
-    } catch (e) {
-      Utils.showToast(context, 'Error deleting account: ${e.toString()}');
-    }
-  }
-
-  Future<void> userSignOut() async {
-    await FirebaseAuth.instance.signOut();
   }
 }
