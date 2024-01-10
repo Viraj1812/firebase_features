@@ -23,6 +23,7 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
   String _enteredEmail = '';
   String _enteredPassword = '';
+  String _enterUsername = '';
   File? _selectedImage;
   bool _isAuthenticating = false;
 
@@ -63,23 +64,41 @@ class _AuthScreenState extends State<AuthScreen> {
                                 _selectedImage = pickedImage;
                               },
                             ),
+                          if (!_isLogin)
+                            TextFormField(
+                              decoration: const InputDecoration(
+                                  labelText: 'Email Address',
+                                  prefixIcon: Icon(Icons.email)),
+                              keyboardType: TextInputType.emailAddress,
+                              autocorrect: false,
+                              textCapitalization: TextCapitalization.none,
+                              validator: (value) {
+                                if (value == null ||
+                                    value.trim().isEmpty ||
+                                    !value.contains('@')) {
+                                  return 'Please enter a valid email address.';
+                                }
+                                return null;
+                              },
+                              onSaved: (newValue) {
+                                _enteredEmail = newValue!;
+                              },
+                            ),
                           TextFormField(
                             decoration: const InputDecoration(
-                                labelText: 'Email Address',
-                                prefixIcon: Icon(Icons.email)),
-                            keyboardType: TextInputType.emailAddress,
-                            autocorrect: false,
-                            textCapitalization: TextCapitalization.none,
+                                labelText: 'User Name',
+                                prefixIcon: Icon(Icons.person)),
+                            enableSuggestions: false,
                             validator: (value) {
                               if (value == null ||
-                                  value.trim().isEmpty ||
-                                  !value.contains('@')) {
-                                return 'Please enter a valid email address.';
+                                  value.isEmpty ||
+                                  value.trim().length < 4) {
+                                return 'Please enter at least 4 characters';
                               }
                               return null;
                             },
                             onSaved: (newValue) {
-                              _enteredEmail = newValue!;
+                              _enterUsername = newValue!;
                             },
                           ),
                           TextFormField(
@@ -282,9 +301,15 @@ class _AuthScreenState extends State<AuthScreen> {
           _enteredPassword,
           context,
           _selectedImage,
+          _enterUsername,
         );
         debugPrint(user.toString());
       }
+      _formKey.currentState?.reset();
+      _selectedImage = null;
+      setState(() {
+        _isAuthenticating = false;
+      });
     } on FirebaseAuthException catch (error) {
       String errorMessage = 'Authentication Failed';
       if (error.code == 'INVALID_LOGIN_CREDENTIALS') {

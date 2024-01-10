@@ -1,20 +1,20 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_features/services/firebase_firestore_service.dart';
 import 'package:firebase_features/ui/auth/auth_screen.dart';
 import 'package:firebase_features/ui/chat_screen.dart';
 import 'package:firebase_features/utils/helper_methods.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthHelper {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-
+  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  final FireStoreHelper _fireStoreHelper = FireStoreHelper();
   Future<User?> signInWithEmailAndPassword(
       String email, String password, BuildContext context) async {
     try {
-      UserCredential userCredential = await _firebaseAuth
+      UserCredential userCredential = await firebaseAuth
           .signInWithEmailAndPassword(email: email, password: password);
       Utils.showToast(context, 'Account Login successfull.');
       debugPrint(userCredential.toString());
@@ -36,21 +36,14 @@ class AuthHelper {
     String password,
     BuildContext context,
     File? selectedImage,
+    String enterUsername,
   ) async {
     try {
-      UserCredential userCredential = await _firebaseAuth
+      UserCredential userCredential = await firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('user_images')
-          .child('${userCredential.user?.uid}.jpg');
-
-      await storageRef.putFile(selectedImage!);
-      final imageURL = await storageRef.getDownloadURL();
-      debugPrint(imageURL);
-
-      debugPrint(userCredential.toString());
+      await _fireStoreHelper.uploadImageAndUpdateUserData(
+          userCredential.user?.uid, email, selectedImage, enterUsername);
       Utils.showToast(context, 'Account Created successfully.');
       Navigator.pushAndRemoveUntil(
         context,
@@ -82,7 +75,7 @@ class AuthHelper {
       );
 
       UserCredential userCredential =
-          await _firebaseAuth.signInWithCredential(credential);
+          await firebaseAuth.signInWithCredential(credential);
       Utils.showToast(context, 'Account Login successfull.');
       return userCredential.user;
     } catch (e) {
@@ -92,7 +85,7 @@ class AuthHelper {
   }
 
   Future<void> signOut(BuildContext context) async {
-    await _firebaseAuth.signOut();
+    await firebaseAuth.signOut();
     Utils.showToast(context, 'Account Logout successfull.');
   }
 
@@ -102,10 +95,10 @@ class AuthHelper {
     required BuildContext context,
   }) async {
     try {
-      await _firebaseAuth.verifyPhoneNumber(
+      await firebaseAuth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential credential) async {
-          await _firebaseAuth.signInWithCredential(credential);
+          await firebaseAuth.signInWithCredential(credential);
         },
         verificationFailed: (FirebaseAuthException e) {
           Utils.showToast(context, e.toString());
@@ -153,7 +146,7 @@ class AuthHelper {
         ),
         (route) => false,
       );
-      await _firebaseAuth.signInWithCredential(credential);
+      await firebaseAuth.signInWithCredential(credential);
     } catch (e) {
       Utils.showToast(context, e.toString());
     }

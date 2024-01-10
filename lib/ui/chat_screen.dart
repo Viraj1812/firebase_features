@@ -1,5 +1,7 @@
 import 'package:firebase_features/services/firebase_auth_service.dart';
 import 'package:firebase_features/ui/auth/auth_screen.dart';
+import 'package:firebase_features/widgets/chat_messages.dart';
+import 'package:firebase_features/widgets/new_message.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatelessWidget {
@@ -12,27 +14,45 @@ class ChatScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Flutter Chat'),
         actions: [
-          IconButton(
-            onPressed: () {
-              _authHelper.userDeleteAccount(context);
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'deleteAccount') {
+                _authHelper.userDeleteAccount(context);
+              } else if (value == 'signOut') {
+                _authHelper.signOut(context).then((value) =>
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const AuthScreen()),
+                        (route) => false));
+              }
             },
-            icon: const Icon(Icons.delete),
-          ),
-          IconButton(
-            onPressed: () {
-              _authHelper.signOut(context).then((value) =>
-                  Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const AuthScreen()),
-                      (route) => false));
+            itemBuilder: (BuildContext context) {
+              return [
+                const PopupMenuItem<String>(
+                  value: 'deleteAccount',
+                  child: ListTile(
+                    leading: Icon(Icons.delete),
+                    title: Text('Delete Account'),
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'signOut',
+                  child: ListTile(
+                    leading: Icon(Icons.exit_to_app),
+                    title: Text('Sign Out'),
+                  ),
+                ),
+              ];
             },
-            icon: const Icon(Icons.exit_to_app),
           ),
         ],
       ),
-      body: const Center(
-        child: Text('Logged in!'),
+      body: Column(
+        children: [
+          Expanded(child: ChatMessages()),
+          const NewMessage(),
+        ],
       ),
     );
   }
