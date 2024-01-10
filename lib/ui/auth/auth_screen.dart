@@ -130,11 +130,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
                 onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginWithPhoneNumber(),
-                      ));
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginWithPhoneNumber(),
+                    ),
+                    (route) => false,
+                  );
                 },
                 child: Container(
                   margin: const EdgeInsets.only(

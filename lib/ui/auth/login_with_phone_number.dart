@@ -97,33 +97,32 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
       loading = true;
     });
     auth.verifyPhoneNumber(
-      phoneNumber: phoneController.text,
-      verificationCompleted: (_) {},
-      verificationFailed: (e) {
-        Utils.showToast(context, e.toString());
-        setState(() {
-          loading = true;
+        phoneNumber: phoneController.text,
+        verificationCompleted: (_) {},
+        verificationFailed: (e) {
+          Utils.showToast(context, e.toString());
+          setState(() {
+            loading = true;
+          });
+        },
+        codeSent: (verificationId, forceResendingToken) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  VerificationScreen(verificationId: verificationId),
+            ),
+            (route) => false,
+          );
+          setState(() {
+            loading = true;
+          });
+        },
+        codeAutoRetrievalTimeout: (e) {
+          Utils.showToast(context, e.toString());
+          setState(() {
+            loading = true;
+          });
         });
-      },
-      codeSent: (verificationId, forceResendingToken) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                VerificationScreen(verificationId: verificationId),
-          ),
-          (route) => false,
-        );
-        setState(() {
-          loading = true;
-        });
-      },
-      codeAutoRetrievalTimeout: (e) {
-        Utils.showToast(context, e.toString());
-        setState(() {
-          loading = true;
-        });
-      },
-    );
   }
 }
