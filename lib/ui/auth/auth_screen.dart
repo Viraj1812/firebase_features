@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_features/services/firebase_auth_service.dart';
 import 'package:firebase_features/ui/auth/login_with_phone_number.dart';
 import 'package:firebase_features/ui/chat_screen.dart';
 import 'package:firebase_features/utils/helper_methods.dart';
+import 'package:firebase_features/widgets/user_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -20,6 +23,9 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
   String _enteredEmail = '';
   String _enteredPassword = '';
+  File? _selectedImage;
+  bool _isAuthenticating = false;
+
   bool _isGoogleSignInLoading = false;
   final AuthHelper _authHelper = AuthHelper();
 
@@ -51,6 +57,12 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          if (!_isLogin)
+                            UserImagePicker(
+                              onPickImage: (pickedImage) {
+                                _selectedImage = pickedImage;
+                              },
+                            ),
                           TextFormField(
                             decoration: const InputDecoration(
                                 labelText: 'Email Address',
@@ -88,36 +100,42 @@ class _AuthScreenState extends State<AuthScreen> {
                           const SizedBox(
                             height: 12,
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              _submit();
-                            },
-                            style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black87),
-                            child: Text(
-                              _isLogin ? 'Login' : 'Signup',
-                              style: GoogleFonts.montserrat(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500),
+                          if (_isAuthenticating)
+                            const CircularProgressIndicator(
+                              color: Colors.white,
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                _isLogin = !_isLogin;
-                              });
-                            },
-                            child: Text(
-                              _isLogin
-                                  ? 'Create an account'
-                                  : 'I already have an account',
-                              style: GoogleFonts.montserrat(
-                                  fontSize: 15,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500),
+                          if (!_isAuthenticating)
+                            ElevatedButton(
+                              onPressed: () {
+                                _submit();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black87),
+                              child: Text(
+                                _isLogin ? 'Login' : 'Signup',
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500),
+                              ),
                             ),
-                          ),
+                          if (!_isAuthenticating)
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isLogin = !_isLogin;
+                                });
+                              },
+                              child: Text(
+                                _isLogin
+                                    ? 'Create an account'
+                                    : 'I already have an account',
+                                style: GoogleFonts.montserrat(
+                                    fontSize: 15,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -240,12 +258,17 @@ class _AuthScreenState extends State<AuthScreen> {
   void _submit() async {
     final isValid = _formKey.currentState?.validate();
 
-    if (isValid == false) {
+    if (isValid == false || (!_isLogin && _selectedImage == null)) {
       return;
     }
+
     _formKey.currentState?.save();
 
     try {
+      setState(() {
+        _isAuthenticating = true;
+      });
+
       if (_isLogin) {
         User? user = await _authHelper.signInWithEmailAndPassword(
           _enteredEmail,
@@ -258,6 +281,7 @@ class _AuthScreenState extends State<AuthScreen> {
           _enteredEmail,
           _enteredPassword,
           context,
+          _selectedImage,
         );
         debugPrint(user.toString());
       }
@@ -274,6 +298,10 @@ class _AuthScreenState extends State<AuthScreen> {
             ? error.message ?? 'Authentication Failed'
             : errorMessage,
       );
+
+      setState(() {
+        _isAuthenticating = false;
+      });
     }
   }
 }

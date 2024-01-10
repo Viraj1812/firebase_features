@@ -20,7 +20,7 @@ class ChatScreen extends StatelessWidget {
           ),
           IconButton(
             onPressed: () {
-              _authHelper.userSignOut().then((value) =>
+              _authHelper.signOut(context).then((value) =>
                   Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
