@@ -63,7 +63,6 @@ class AuthHelper {
       GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
       if (googleUser == null) {
-        // The user canceled Google Sign-In
         return null;
       }
 
@@ -76,6 +75,14 @@ class AuthHelper {
 
       UserCredential userCredential =
           await firebaseAuth.signInWithCredential(credential);
+      final User user = userCredential.user!;
+      await _fireStoreHelper.uploadImageAndUpdateUserDataForGoogleLogin(
+        user.uid,
+        user.email ?? '',
+        user.photoURL ?? '',
+        user.displayName ?? '',
+      );
+
       Utils.showToast(context, 'Account Login successfull.');
       return userCredential.user;
     } catch (e) {

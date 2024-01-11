@@ -26,6 +26,19 @@ class FireStoreHelper {
     }
   }
 
+  Future<void> uploadImageAndUpdateUserDataForGoogleLogin(String? userId,
+      String email, String imageURL, String enterUsername) async {
+    if (userId != null) {
+      await firebaseFirestore.collection('users').doc(userId).set({
+        'username': enterUsername,
+        'email': email,
+        'image_url': imageURL,
+      });
+
+      debugPrint(imageURL);
+    }
+  }
+
   Future<void> submitMessage(String enteredMessage, String userId) async {
     if (enteredMessage.trim().isEmpty) {
       return;
@@ -41,5 +54,16 @@ class FireStoreHelper {
       'username': userData.data()?['username'],
       'userImage': userData.data()?['image_url'],
     });
+  }
+
+  Future<String?> uploadImage(File? selectedImage, String userId) async {
+    if (selectedImage == null) return null;
+
+    final store = storageRef.ref().child('user_images').child('$userId.jpg');
+
+    await store.putFile(selectedImage);
+    final imageURL = await store.getDownloadURL();
+
+    return imageURL;
   }
 }

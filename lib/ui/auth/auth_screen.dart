@@ -64,43 +64,43 @@ class _AuthScreenState extends State<AuthScreen> {
                                 _selectedImage = pickedImage;
                               },
                             ),
-                          if (!_isLogin)
-                            TextFormField(
-                              decoration: const InputDecoration(
-                                  labelText: 'Email Address',
-                                  prefixIcon: Icon(Icons.email)),
-                              keyboardType: TextInputType.emailAddress,
-                              autocorrect: false,
-                              textCapitalization: TextCapitalization.none,
-                              validator: (value) {
-                                if (value == null ||
-                                    value.trim().isEmpty ||
-                                    !value.contains('@')) {
-                                  return 'Please enter a valid email address.';
-                                }
-                                return null;
-                              },
-                              onSaved: (newValue) {
-                                _enteredEmail = newValue!;
-                              },
-                            ),
                           TextFormField(
                             decoration: const InputDecoration(
-                                labelText: 'User Name',
-                                prefixIcon: Icon(Icons.person)),
-                            enableSuggestions: false,
+                                labelText: 'Email Address',
+                                prefixIcon: Icon(Icons.email)),
+                            keyboardType: TextInputType.emailAddress,
+                            autocorrect: false,
+                            textCapitalization: TextCapitalization.none,
                             validator: (value) {
                               if (value == null ||
-                                  value.isEmpty ||
-                                  value.trim().length < 4) {
-                                return 'Please enter at least 4 characters';
+                                  value.trim().isEmpty ||
+                                  !value.contains('@')) {
+                                return 'Please enter a valid email address.';
                               }
                               return null;
                             },
                             onSaved: (newValue) {
-                              _enterUsername = newValue!;
+                              _enteredEmail = newValue!;
                             },
                           ),
+                          if (!_isLogin)
+                            TextFormField(
+                              decoration: const InputDecoration(
+                                  labelText: 'User Name',
+                                  prefixIcon: Icon(Icons.person)),
+                              enableSuggestions: false,
+                              validator: (value) {
+                                if (value == null ||
+                                    value.isEmpty ||
+                                    value.trim().length < 4) {
+                                  return 'Please enter at least 4 characters';
+                                }
+                                return null;
+                              },
+                              onSaved: (newValue) {
+                                _enterUsername = newValue!;
+                              },
+                            ),
                           TextFormField(
                             decoration: const InputDecoration(
                                 labelText: 'Password',

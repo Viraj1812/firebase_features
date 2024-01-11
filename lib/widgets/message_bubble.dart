@@ -33,7 +33,7 @@ class MessageBubble extends StatelessWidget {
       children: [
         if (userImage != null)
           Positioned(
-            top: 15,
+            top: 25,
             right: isMe ? 0 : null,
             child: CircleAvatar(
               backgroundImage: NetworkImage(
@@ -56,15 +56,14 @@ class MessageBubble extends StatelessWidget {
                   if (isFirstInSequence) const SizedBox(height: 18),
                   if (username != null)
                     Padding(
-                      padding: const EdgeInsets.only(
-                        left: 13,
-                        right: 13,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 13,
                       ),
                       child: Text(
                         username!,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                     ),

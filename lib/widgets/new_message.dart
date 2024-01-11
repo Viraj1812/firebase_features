@@ -27,12 +27,18 @@ class _NewMessageState extends State<NewMessage> {
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: messageController,
-              textCapitalization: TextCapitalization.sentences,
-              autocorrect: true,
-              enableSuggestions: true,
-              decoration: const InputDecoration(labelText: 'Send a message...'),
+            child: Card(
+              child: TextField(
+                controller: messageController,
+                textCapitalization: TextCapitalization.sentences,
+                autocorrect: true,
+                enableSuggestions: true,
+                decoration: const InputDecoration(
+                  labelText: 'Send a message...',
+                  contentPadding: EdgeInsets.all(16),
+                  border: InputBorder.none,
+                ),
+              ),
             ),
           ),
           IconButton(
