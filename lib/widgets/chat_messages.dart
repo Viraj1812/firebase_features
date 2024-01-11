@@ -60,6 +60,7 @@ class _ChatMessagesState extends State<ChatMessages> {
           itemCount: loadedMessages.length,
           itemBuilder: (context, index) {
             final chatMessages = loadedMessages[index].data();
+            final messageId = loadedMessages[index].id;
             final nextChatMessage = index + 1 < loadedMessages.length
                 ? loadedMessages[index + 1].data()
                 : null;
@@ -69,19 +70,66 @@ class _ChatMessagesState extends State<ChatMessages> {
 
             final nextUserIsSame = nextMessageUserId == currentMessageUserId;
 
-            if (nextUserIsSame) {
-              return MessageBubble.next(
-                message: chatMessages['text'],
-                isMe: authenticatedUser.uid == currentMessageUserId,
-              );
-            } else {
-              return MessageBubble.first(
-                userImage: chatMessages['userImage'],
-                username: chatMessages['username'],
-                message: chatMessages['text'],
-                isMe: authenticatedUser.uid == currentMessageUserId,
-              );
-            }
+            return Dismissible(
+              key: Key(messageId),
+              onDismissed: (direction) {
+                // Handle swipe to delete
+                _fireStoreHelper.deleteMessage(
+                  messageId,
+                );
+              },
+              background: Container(
+                color: Colors.red,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 20),
+                child: const Icon(
+                  Icons.delete,
+                  color: Colors.white,
+                ),
+              ),
+              child: GestureDetector(
+                onLongPress: () {
+                  // Show delete popup
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Delete Message?'),
+                        content: const Text(
+                            'Are you sure you want to delete this message?'),
+                        actions: <Widget>[
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Handle delete on tap
+                              _fireStoreHelper.deleteMessage(messageId);
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: nextUserIsSame
+                    ? MessageBubble.next(
+                        message: chatMessages['text'],
+                        isMe: authenticatedUser.uid == currentMessageUserId,
+                      )
+                    : MessageBubble.first(
+                        userImage: chatMessages['userImage'],
+                        username: chatMessages['username'],
+                        message: chatMessages['text'],
+                        isMe: authenticatedUser.uid == currentMessageUserId,
+                      ),
+              ),
+            );
           },
         );
       },

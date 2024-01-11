@@ -66,4 +66,8 @@ class FireStoreHelper {
 
     return imageURL;
   }
+
+  Future<void> deleteMessage(String messageId) async {
+    await firebaseFirestore.collection('chat').doc(messageId).delete();
+  }
 }
