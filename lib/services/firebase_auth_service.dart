@@ -102,6 +102,12 @@ class AuthHelper {
         },
         verificationFailed: (FirebaseAuthException e) {
           Utils.showToast(context, e.toString());
+          Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AuthScreen(),
+              ),
+              (route) => false);
         },
         codeSent: (String verificationId, int? resendToken) {
           codeSent(verificationId, resendToken ?? 0);
@@ -110,6 +116,12 @@ class AuthHelper {
       );
     } catch (e) {
       Utils.showToast(context, e.toString());
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AuthScreen(),
+          ),
+          (route) => false);
     }
   }
 
