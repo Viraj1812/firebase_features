@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_features/services/firebase_analytics_service.dart';
 import 'package:firebase_features/services/firebase_auth_service.dart';
 import 'package:firebase_features/ui/auth/login_with_phone_number.dart';
 import 'package:firebase_features/ui/chat_screen.dart';
@@ -262,6 +263,7 @@ class _AuthScreenState extends State<AuthScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => ChatScreen(),
+          settings: const RouteSettings(name: 'ChatScreen'),
         ),
         (route) => false,
       );
@@ -310,6 +312,7 @@ class _AuthScreenState extends State<AuthScreen> {
       setState(() {
         _isAuthenticating = false;
       });
+      await AnalyticsService.instance.logSignInEvent('email');
     } on FirebaseAuthException catch (error) {
       String errorMessage = 'Authentication Failed';
       if (error.code == 'INVALID_LOGIN_CREDENTIALS') {

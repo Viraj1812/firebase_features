@@ -60,7 +60,7 @@ void appNavigate(BuildContext context) {
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return ChatScreen();
+              return const ChatScreen();
             }
             return const AuthScreen();
           },

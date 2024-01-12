@@ -106,6 +106,7 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
             MaterialPageRoute(
               builder: (context) =>
                   VerificationScreen(verificationId: verificationId),
+              settings: const RouteSettings(name: 'VerificationScreen'),
             ),
             (route) => false,
           );

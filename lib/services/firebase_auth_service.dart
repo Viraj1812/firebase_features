@@ -49,6 +49,7 @@ class AuthHelper {
         context,
         MaterialPageRoute(
           builder: (context) => ChatScreen(),
+          settings: const RouteSettings(name: 'ChatScreen'),
         ),
         (route) => false,
       );
@@ -113,6 +114,7 @@ class AuthHelper {
               context,
               MaterialPageRoute(
                 builder: (context) => const AuthScreen(),
+                settings: const RouteSettings(name: 'AuthScreen'),
               ),
               (route) => false);
         },
@@ -127,6 +129,7 @@ class AuthHelper {
           context,
           MaterialPageRoute(
             builder: (context) => const AuthScreen(),
+            settings: const RouteSettings(name: 'AuthScreen'),
           ),
           (route) => false);
     }
@@ -162,6 +165,7 @@ class AuthHelper {
         context,
         MaterialPageRoute(
           builder: (context) => ChatScreen(),
+          settings: const RouteSettings(name: 'ChatScreen'),
         ),
         (route) => false,
       );
