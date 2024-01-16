@@ -22,7 +22,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
 
-    LocalNotificationService.initilize();
+    LocalNotificationService.initilize(context);
 
     FirebaseMessaging.instance.getInitialMessage().then(
       (event) {
